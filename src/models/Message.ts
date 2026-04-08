@@ -6,3 +6,7 @@ export interface Message {
   meme: Meme | null;
   data: string | null;
 }
+
+export interface MessageWithMeme extends Message {
+  meme: Meme;
+}

@@ -2,14 +2,16 @@ import type { Meme, MemeMediaType } from "@models/Meme";
 import type { Message } from "@models/Message";
 import chatExport from "../data/WhatsApp Chat with Memes.txt?raw";
 
-export const processWhatsAppData = () => {
+export const processWhatsAppData = async (): Promise<Message[]> => {
   return parseWhatsAppExportToMemes(chatExport);
 };
 
-const parseWhatsAppExportToMemes = (whatsAppMessagesText: string) => {
+const parseWhatsAppExportToMemes = async (
+  whatsAppMessagesText: string
+): Promise<Message[]> => {
   const messages = getMessagesFromText(whatsAppMessagesText);
-  const parsedMessages = messages.map((message) =>
-    parseDataFromMessage(message)
+  const parsedMessages = await Promise.all(
+    messages.map((message) => parseDataFromMessage(message))
   );
   return parsedMessages.filter((message) => message !== null);
 };
@@ -45,7 +47,9 @@ const MESSAGE_REGEX = new RegExp(
   "im"
 );
 
-const parseDataFromMessage = (message: string): Message | null => {
+const parseDataFromMessage = async (
+  message: string
+): Promise<Message | null> => {
   const normalisedMessage = message.replace(/\u202f/g, " ").trim();
   const match = MESSAGE_REGEX.exec(normalisedMessage);
   if (!match) {
@@ -69,7 +73,7 @@ const parseDataFromMessage = (message: string): Message | null => {
   const parsedMessage: Message = {
     postedAt,
     postedBy: author ?? null,
-    meme: attachment ? parseAttachment(attachment) : null,
+    meme: attachment ? await parseAttachment(attachment) : null,
     data: rest ?? null,
   };
 
@@ -110,12 +114,43 @@ const parsePostedAt = (postedAtString: string) => {
   return new Date(year, month - 1, day, hours, minutes, 0, 0);
 };
 
-const parseAttachment = (attachment: string): Meme | null => {
+const imageUrls = import.meta.glob<string>(
+  "../data/*.{jpg,jpeg,png,gif,webp,mp4}",
+  {
+    eager: true,
+    query: "?url",
+    import: "default",
+  }
+);
+
+const parseAttachment = async (attachment: string): Promise<Meme | null> => {
   const type = parseFileExtension(attachment);
   if (!type) return null;
+
+  if (type === "audio") {
+    return null;
+  }
+
+  const url = imageUrls[`../data/${attachment}`];
+  if (!url) {
+    console.error(`Unrecognised image: ${attachment}`);
+    return null;
+  }
+
+  const dimensions =
+    type === "image"
+      ? await getImageDimensions(url)
+      : await getVideoDimensions(url);
+  if (!dimensions) {
+    console.error(`Could not read media dimensions: ${attachment}`);
+    return null;
+  }
+
   return {
-    url: attachment,
+    src: url,
     type,
+    width: dimensions.width,
+    height: dimensions.height,
   };
 };
 
@@ -132,3 +167,35 @@ const parseFileExtension = (fileName: string): MemeMediaType | null => {
   console.error(`Unrecognised file extension: ${fileName}`);
   return null;
 };
+
+/**
+ * `width` / `height` stay 0 until the browser finishes loading — must wait for
+ * `load`.
+ */
+const getImageDimensions = (
+  url: string
+): Promise<{ width: number; height: number } | null> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () =>
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+
+const getVideoDimensions = (
+  url: string
+): Promise<{ width: number; height: number } | null> =>
+  new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    const finish = (value: { width: number; height: number } | null) => {
+      video.removeAttribute("src");
+      video.load();
+      resolve(value);
+    };
+    video.onloadedmetadata = () =>
+      finish({ width: video.videoWidth, height: video.videoHeight });
+    video.onerror = () => finish(null);
+    video.src = url;
+  });
