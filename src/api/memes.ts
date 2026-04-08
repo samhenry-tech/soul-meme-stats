@@ -1,7 +1,9 @@
 import { processWhatsAppData } from "@helpers/whatsapp-processor";
 
-const memes = processWhatsAppData();
+const messages = processWhatsAppData();
+
+const messagesWithMemes = messages.filter((message) => message.meme !== null);
 
 export const getMemes = () => {
-  return memes;
+  return messagesWithMemes;
 };

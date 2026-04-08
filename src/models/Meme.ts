@@ -1,6 +1,6 @@
-export type MemeMediaKind = "image" | "video" | "sticker" | "audio";
+export type MemeMediaType = "image" | "video" | "audio";
 
 export interface Meme {
   url: string;
-  kind: MemeMediaKind;
+  type: MemeMediaType;
 }
