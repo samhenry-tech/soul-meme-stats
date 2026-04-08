@@ -1,6 +1,7 @@
 import type { Meme, MemeMediaType } from "@models/Meme";
 import type { Message } from "@models/Message";
 import chatExport from "../data/WhatsApp Chat with Memes.txt?raw";
+import { mobileNumberToAuthor } from "./mobileNumberToAuthor";
 
 export const processWhatsAppData = async (): Promise<Message[]> => {
   return parseWhatsAppExportToMemes(chatExport);
@@ -66,7 +67,7 @@ const parseDataFromMessage = async (
   const postedAt = parsePostedAt(postedAtRaw);
   if (!postedAt) return null;
 
-  const author = match[2];
+  const author = match[2] ? parseAuthor(match[2]) : null;
   const attachment = match[3];
   const rest = match[4];
 
@@ -122,6 +123,16 @@ const imageUrls = import.meta.glob<string>(
     import: "default",
   }
 );
+
+const parseAuthor = (author: string): string => {
+  if (author.startsWith("+")) {
+    return (
+      mobileNumberToAuthor[author as keyof typeof mobileNumberToAuthor] ??
+      author
+    );
+  }
+  return author;
+};
 
 const parseAttachment = async (attachment: string): Promise<Meme | null> => {
   const type = parseFileExtension(attachment);

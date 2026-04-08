@@ -11,10 +11,14 @@
     "start": "vite --open"
   },
   "dependencies": {
+    "@nivo/bar": "^0.99.0",
+    "@nivo/core": "^0.99.0",
+    "@tanstack/react-router": "^1.168.10",
     "clsx": "^2.1.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-photo-album": "^3.5.1"
+    "react-photo-album": "^3.5.1",
+    "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.59.0",

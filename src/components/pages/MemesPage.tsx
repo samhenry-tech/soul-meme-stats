@@ -1,37 +1,36 @@
 import { getMemes } from "@api/memes";
-import { Header } from "@components/organisms/Header";
 import type { Meme } from "@models/Meme";
 import { RowsPhotoAlbum } from "react-photo-album";
 import "react-photo-album/rows.css";
 
-export const Home = () => {
+export const MemesPage = () => {
   const memes = getMemes();
   return (
-    <>
-      <Header />
-      <section className="flex w-full max-w-7xl flex-col items-center px-4 py-8 sm:px-6 lg:px-8">
-        <section>
-          <article className="flex flex-col items-center rounded-lg border-2 border-red-300 p-4">
-            <h2 className="text-2xl font-bold">Total Memes</h2>
-            <p>{memes.length}</p>
-          </article>
-        </section>
+    <section
+      id="memes-page"
+      className="flex w-full flex-col items-center overflow-hidden p-4"
+    >
+      <article
+        className="flex flex-col justify-center"
+        style={{ height: "100%", aspectRatio: 1 / Math.SQRT2 }}
+      >
         <RowsPhotoAlbum
           photos={memes.map((m) => m.meme)}
           defaultContainerWidth={1280}
-          spacing={8}
+          targetRowHeight={79.3}
+          spacing={4}
           render={{
             image: (_, context) => (
-              <RenderItem key={context.index} meme={context.photo} />
+              <Item key={context.index} meme={context.photo} />
             ),
           }}
         />
-      </section>
-    </>
+      </article>
+    </section>
   );
 };
 
-const RenderItem = ({ meme }: { meme: Meme }) => {
+const Item = ({ meme }: { meme: Meme }) => {
   if (meme.type === "image") {
     return (
       <img

@@ -1,0 +1,112 @@
+import { getMemesByAuthor } from "@api/memes";
+import { ResponsiveBar } from "@nivo/bar";
+import type { BarDatum } from "@nivo/bar";
+import { useEffect, useMemo, useState } from "react";
+import {
+  adjectives,
+  animals,
+  uniqueNamesGenerator,
+} from "unique-names-generator";
+
+const chartTheme = {
+  background: "transparent",
+  axis: {
+    domain: {
+      line: { stroke: "#6f8287" },
+    },
+    legend: {
+      text: { fill: "#a9b8bc", fontSize: 12 },
+    },
+    ticks: {
+      line: { stroke: "#6f8287", strokeWidth: 1 },
+      text: { fill: "#a9b8bc", fontSize: 11 },
+    },
+  },
+  grid: {
+    line: {
+      stroke: "#2e383d",
+      strokeOpacity: 0.6,
+    },
+  },
+  legends: {
+    text: {
+      fill: "#a9b8bc",
+    },
+  },
+};
+
+export const MemeBarChart = () => {
+  const topMemeAuthors = getMemesByAuthor().slice(0, 4);
+  const [data, setData] = useState<BarDatum[]>([]);
+
+  const maxCount = Math.max(...topMemeAuthors.map((d) => d.messages.length));
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const next: BarDatum[] = await Promise.all(
+        topMemeAuthors.map(async ({ author, messages }) => ({
+          author: await getPsudoname(author),
+          count: messages.length,
+        }))
+      );
+      if (!cancelled) {
+        setData(next);
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const chartData = useMemo(() => [...data].reverse(), [data]);
+
+  return (
+    <div className="mt-10 h-[min(28rem,70vh)] w-full min-w-0">
+      <ResponsiveBar
+        layout="horizontal"
+        data={chartData}
+        theme={chartTheme}
+        keys={["count"]}
+        indexBy="author"
+        enableLabel={false}
+        isInteractive={false}
+        margin={{ top: 24, right: 32, bottom: 56, left: 110 }}
+        padding={0.35}
+        innerPadding={2}
+        borderRadius={2}
+        borderColor={{
+          from: "color",
+          modifiers: [["darker", 1.2]],
+        }}
+        valueScale={{ type: "symlog", max: maxCount }}
+        axisBottom={null}
+        axisLeft={{
+          tickSize: 5,
+          tickPadding: 8,
+          tickRotation: 0,
+        }}
+      />
+    </div>
+  );
+};
+
+const seedAdjustment = 5;
+
+const getPsudoname = async (value: string) => {
+  const seed = (await digestStringToSeed(value)) + seedAdjustment;
+
+  return uniqueNamesGenerator({
+    dictionaries: [adjectives, animals],
+    separator: " ",
+    seed,
+    style: "capital",
+  });
+};
+
+const digestStringToSeed = async (value: string): Promise<number> => {
+  const encoded = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return new DataView(digest).getUint32(0, false);
+};
