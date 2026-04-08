@@ -8,6 +8,17 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 
+const BAR_COLORS = [
+  "#ff005d", // hot pink
+  "#00d4ff", // cyan
+  "#7c3aed", // violet
+  "#22c55e", // green
+  "#f97316", // orange
+  "#facc15", // yellow
+  "#06b6d4", // teal
+  "#e11d48", // rose
+] as const;
+
 const chartTheme = {
   background: "transparent",
   axis: {
@@ -36,7 +47,7 @@ const chartTheme = {
 };
 
 export const MemeBarChart = () => {
-  const topMemeAuthors = getMemesByAuthor().slice(0, 4);
+  const topMemeAuthors = useMemo(() => getMemesByAuthor().slice(0, 4), []);
   const [data, setData] = useState<BarDatum[]>([]);
 
   const maxCount = Math.max(...topMemeAuthors.map((d) => d.messages.length));
@@ -58,7 +69,7 @@ export const MemeBarChart = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [topMemeAuthors]);
 
   const chartData = useMemo(() => [...data].reverse(), [data]);
 
@@ -70,6 +81,9 @@ export const MemeBarChart = () => {
         theme={chartTheme}
         keys={["count"]}
         indexBy="author"
+        colors={(bar: { index: number }) =>
+          BAR_COLORS[bar.index % BAR_COLORS.length] ?? BAR_COLORS[0]
+        }
         enableLabel={false}
         isInteractive={false}
         margin={{ top: 24, right: 32, bottom: 56, left: 110 }}
