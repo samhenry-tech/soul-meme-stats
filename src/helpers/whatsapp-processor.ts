@@ -1,6 +1,6 @@
 import type { Meme, MemeMediaType } from "@models/Meme";
 import type { Message } from "@models/Message";
-import chatExport from "../data/WhatsApp Chat with Memes.txt?raw";
+import chatExport from "../data/_chat.txt?raw";
 import { mobileNumberToAuthor } from "./mobileNumberToAuthor";
 
 export const processWhatsAppData = async (): Promise<Message[]> => {
@@ -10,7 +10,8 @@ export const processWhatsAppData = async (): Promise<Message[]> => {
 const parseWhatsAppExportToMemes = async (
   whatsAppMessagesText: string
 ): Promise<Message[]> => {
-  const messages = getMessagesFromText(whatsAppMessagesText);
+  const withoutBidiMarks = whatsAppMessagesText.replace(/[\u200e\u200f]/g, "");
+  const messages = getMessagesFromText(withoutBidiMarks);
   const parsedMessages = await Promise.all(
     messages.map((message) => parseDataFromMessage(message))
   );
@@ -18,7 +19,7 @@ const parseWhatsAppExportToMemes = async (
 };
 
 const MESSAGE_HEADER_SPLIT =
-  /(?=^\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}\s*(?:am|pm)\s+-\s+)/gim;
+  /(?=^\s*\[\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}(?::\d{2})?\s*(?:am|pm)\s*\])/gim;
 
 const getMessagesFromText = (whatsAppMessagesText: string): string[] => {
   const normalized = whatsAppMessagesText.replace(/\u202f/g, " ");
@@ -34,17 +35,21 @@ const DATE_PART = `${DAY_PART}/${MONTH_PART}/${YEAR_PART}`;
 
 const HOUR_PART = "\\d{1,2}";
 const MINUTE_PART = "\\d{2}";
-const TIME_PART = `${HOUR_PART}:${MINUTE_PART}`;
+const SECOND_PART = "(?::\\d{2})?";
+const TIME_PART = `${HOUR_PART}:${MINUTE_PART}${SECOND_PART}`;
 
 const AM_PM_PART = "am|pm";
-const POSTED_AT_GROUP = `(${DATE_PART},\\s*${TIME_PART}\\s*(?:${AM_PM_PART}))`;
+/** Datetime inside `[ ... ]` (no brackets in capture). */
+const POSTED_AT_INNER = `${DATE_PART},\\s*${TIME_PART}\\s*(?:${AM_PM_PART})`;
 
-const AUTHOR_GROUP = `(?:([^:\\n]+):\\s*)?`;
-const ATTACHMENT_GROUP = `(?:(.+?)\\s*\\(file attached\\)\\s*)?`;
+const AUTHOR_GROUP = `([^:\\n]+):\\s*`;
+
+/** Optional `<attached: file>`, then rest of body. */
+const ATTACHMENT_GROUP = `(?:\\s*<attached:\\s*([^>]+)>\\s*)?`;
 const REST_GROUP = `([\\s\\S]*)`;
 
 const MESSAGE_REGEX = new RegExp(
-  `^${POSTED_AT_GROUP}\\s+-\\s*${AUTHOR_GROUP}${ATTACHMENT_GROUP}${REST_GROUP}$`,
+  `^\\s*\\[(${POSTED_AT_INNER})\\]\\s+${AUTHOR_GROUP}${ATTACHMENT_GROUP}${REST_GROUP}$`,
   "im"
 );
 
@@ -67,9 +72,10 @@ const parseDataFromMessage = async (
   const postedAt = parsePostedAt(postedAtRaw);
   if (!postedAt) return null;
 
-  const author = match[2] ? parseAuthor(match[2]) : null;
-  const attachment = match[3];
-  const rest = match[4];
+  const authorRaw = match[2]?.trim();
+  const author = authorRaw ? parseAuthor(authorRaw) : null;
+  const attachment = match[3]?.trim();
+  const rest = match[4]?.trim() ? match[4] : null;
 
   const parsedMessage: Message = {
     postedAt,
@@ -82,7 +88,7 @@ const parseDataFromMessage = async (
 };
 
 const DATE_GROUP = `(${DAY_PART})/(${MONTH_PART})/(${YEAR_PART})`;
-const TIME_GROUP = `(${HOUR_PART}):(${MINUTE_PART})`;
+const TIME_GROUP = `(${HOUR_PART}):(${MINUTE_PART})(?::(\\d{2}))?`;
 const AM_PM_GROUP = `(${AM_PM_PART})`;
 
 const POSTED_AT_REGEX = new RegExp(
@@ -91,7 +97,7 @@ const POSTED_AT_REGEX = new RegExp(
 );
 
 const parsePostedAt = (postedAtString: string) => {
-  const m = POSTED_AT_REGEX.exec(postedAtString);
+  const m = POSTED_AT_REGEX.exec(postedAtString.trim());
   if (!m) {
     console.error(`Unrecognised postedAt: ${postedAtString}`);
     return null;
@@ -104,15 +110,16 @@ const parsePostedAt = (postedAtString: string) => {
 
   let hours = parseInt(m[4] ?? "", 10);
   const minutes = parseInt(m[5] ?? "", 10);
+  const seconds = m[6] ? parseInt(m[6], 10) : 0;
 
-  const amOrPm = (m[6] ?? "").toLowerCase();
+  const amOrPm = (m[7] ?? "").toLowerCase();
   if (amOrPm !== "am" && amOrPm !== "pm") {
     console.error(`Unrecognised postedAt amOrPm: ${postedAtString}`);
     return null;
   }
   if (amOrPm === "pm" && hours < 12) hours += 12;
   if (amOrPm === "am" && hours === 12) hours = 0;
-  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+  return new Date(year, month - 1, day, hours, minutes, seconds, 0);
 };
 
 const imageUrls = import.meta.glob<string>(
