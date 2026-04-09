@@ -1,4 +1,4 @@
-import type { Meme } from "./Meme";
+import type { Meme } from "~/models/Meme";
 
 export interface Message {
   postedAt: Date;

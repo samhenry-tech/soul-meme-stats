@@ -1,5 +1,5 @@
-import { getMemes } from "@api/memes";
-import type { Meme } from "@models/Meme";
+import { getMemes } from "~/api/memes";
+import { MemeItem } from "~/components/atoms/MemeItem";
 import { RowsPhotoAlbum } from "react-photo-album";
 import "react-photo-album/rows.css";
 
@@ -17,40 +17,15 @@ export const MemesPage = () => {
         <RowsPhotoAlbum
           photos={memes.map((m) => m.meme)}
           defaultContainerWidth={1280}
-          targetRowHeight={79.3}
+          targetRowHeight={65}
           spacing={4}
           render={{
             image: (_, context) => (
-              <Item key={context.index} meme={context.photo} />
+              <MemeItem key={context.index} meme={context.photo} />
             ),
           }}
         />
       </article>
     </section>
   );
-};
-
-const Item = ({ meme }: { meme: Meme }) => {
-  if (meme.type === "image") {
-    return (
-      <img
-        src={meme.src}
-        alt={meme.type ?? ""}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
-    );
-  }
-  if (meme.type === "video") {
-    return (
-      <video
-        src={meme.src}
-        autoPlay
-        muted
-        loop
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        playsInline
-      />
-    );
-  }
-  return null;
 };

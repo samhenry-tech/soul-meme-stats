@@ -1,7 +1,6 @@
-import type { Meme, MemeMediaType } from "@models/Meme";
-import type { Message } from "@models/Message";
-import chatExport from "../data/_chat.txt?raw";
-import { mobileNumberToAuthor } from "./mobileNumberToAuthor";
+import type { Meme, MemeMediaType } from "~/models/Meme";
+import type { Message } from "~/models/Message";
+import chatExport from "~/data/_chat.txt?raw";
 
 export const processWhatsAppData = async (): Promise<Message[]> => {
   return parseWhatsAppExportToMemes(chatExport);
@@ -12,6 +11,7 @@ const parseWhatsAppExportToMemes = async (
 ): Promise<Message[]> => {
   const withoutBidiMarks = whatsAppMessagesText.replace(/[\u200e\u200f]/g, "");
   const messages = getMessagesFromText(withoutBidiMarks);
+  console.log(messages);
   const parsedMessages = await Promise.all(
     messages.map((message) => parseDataFromMessage(message))
   );
@@ -19,13 +19,13 @@ const parseWhatsAppExportToMemes = async (
 };
 
 const MESSAGE_HEADER_SPLIT =
-  /(?=^\s*\[\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}(?::\d{2})?\s*(?:am|pm)\s*\])/gim;
+  /\r?\n(?=\s*\[\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}(?::\d{2})?\s*(?:am|pm)\s*\])/gi;
 
 const getMessagesFromText = (whatsAppMessagesText: string): string[] => {
   const normalized = whatsAppMessagesText.replace(/\u202f/g, " ");
   return normalized
     .split(MESSAGE_HEADER_SPLIT)
-    .filter((chunk) => chunk.length > 0);
+    .filter((chunk) => chunk.trim().length > 0);
 };
 
 const DAY_PART = "\\d{1,2}";
@@ -35,21 +35,18 @@ const DATE_PART = `${DAY_PART}/${MONTH_PART}/${YEAR_PART}`;
 
 const HOUR_PART = "\\d{1,2}";
 const MINUTE_PART = "\\d{2}";
-const SECOND_PART = "(?::\\d{2})?";
-const TIME_PART = `${HOUR_PART}:${MINUTE_PART}${SECOND_PART}`;
-
+const SECOND_PART = "\\d{2}";
+const TIME_PART = `${HOUR_PART}:${MINUTE_PART}:${SECOND_PART}`;
 const AM_PM_PART = "am|pm";
-/** Datetime inside `[ ... ]` (no brackets in capture). */
-const POSTED_AT_INNER = `${DATE_PART},\\s*${TIME_PART}\\s*(?:${AM_PM_PART})`;
+const POSTED_AT_GROUP = `\\[(${DATE_PART},\\s*${TIME_PART}\\s*(?:${AM_PM_PART}))\\]`;
 
 const AUTHOR_GROUP = `([^:\\n]+):\\s*`;
 
-/** Optional `<attached: file>`, then rest of body. */
+const DATA_GROUP = `([\\s\\S]*?)`;
 const ATTACHMENT_GROUP = `(?:\\s*<attached:\\s*([^>]+)>\\s*)?`;
-const REST_GROUP = `([\\s\\S]*)`;
 
 const MESSAGE_REGEX = new RegExp(
-  `^\\s*\\[(${POSTED_AT_INNER})\\]\\s+${AUTHOR_GROUP}${ATTACHMENT_GROUP}${REST_GROUP}$`,
+  `^\\s*${POSTED_AT_GROUP}\\s+${AUTHOR_GROUP}${DATA_GROUP}${ATTACHMENT_GROUP}$`,
   "im"
 );
 
@@ -72,23 +69,25 @@ const parseDataFromMessage = async (
   const postedAt = parsePostedAt(postedAtRaw);
   if (!postedAt) return null;
 
+  const data = match[3]?.trim() ?? "";
+
   const authorRaw = match[2]?.trim();
-  const author = authorRaw ? parseAuthor(authorRaw) : null;
-  const attachment = match[3]?.trim();
-  const rest = match[4]?.trim() ? match[4] : null;
+  const author = authorRaw ? parseAuthor(authorRaw, data) : null;
+
+  const attachment = match[4]?.trim() ? match[4] : null;
 
   const parsedMessage: Message = {
     postedAt,
     postedBy: author ?? null,
     meme: attachment ? await parseAttachment(attachment) : null,
-    data: rest ?? null,
+    data: data ?? null,
   };
 
   return parsedMessage;
 };
 
 const DATE_GROUP = `(${DAY_PART})/(${MONTH_PART})/(${YEAR_PART})`;
-const TIME_GROUP = `(${HOUR_PART}):(${MINUTE_PART})(?::(\\d{2}))?`;
+const TIME_GROUP = `(${HOUR_PART}):(${MINUTE_PART}):(${SECOND_PART})`;
 const AM_PM_GROUP = `(${AM_PM_PART})`;
 
 const POSTED_AT_REGEX = new RegExp(
@@ -131,14 +130,10 @@ const imageUrls = import.meta.glob<string>(
   }
 );
 
-const parseAuthor = (author: string): string => {
-  if (author.startsWith("+")) {
-    return (
-      mobileNumberToAuthor[author as keyof typeof mobileNumberToAuthor] ??
-      author
-    );
-  }
-  return author;
+const parseAuthor = (author: string, data: string): string | null => {
+  if (data.includes(`removed ${author}`)) return null;
+  const normalized = author.trim().replace(/^~\s*/, "");
+  return normalized;
 };
 
 const parseAttachment = async (attachment: string): Promise<Meme | null> => {
@@ -186,10 +181,6 @@ const parseFileExtension = (fileName: string): MemeMediaType | null => {
   return null;
 };
 
-/**
- * `width` / `height` stay 0 until the browser finishes loading — must wait for
- * `load`.
- */
 const getImageDimensions = (
   url: string
 ): Promise<{ width: number; height: number } | null> =>

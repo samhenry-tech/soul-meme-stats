@@ -1,7 +1,7 @@
-import { getMemesByAuthor } from "@api/memes";
-import { GradientWaveBar } from "@components/atoms/GradientWaveBar";
-import { ResponsiveBar } from "@nivo/bar";
-import type { BarDatum } from "@nivo/bar";
+import { ResponsiveBar, type BarDatum } from "@nivo/bar";
+import { getMemesByAuthor } from "~/api/memes";
+import { GradientWaveBar } from "~/components/atoms/GradientWaveBar";
+import { isHidden } from "~/constants";
 import { useEffect, useMemo, useState } from "react";
 import {
   adjectives,
@@ -58,7 +58,7 @@ export const MemeBarChart = () => {
     const run = async () => {
       const next: BarDatum[] = await Promise.all(
         topMemeAuthors.map(async ({ author, messages }) => ({
-          author: await getPsudoname(author),
+          author: isHidden ? await getPsudoname(author) : author,
           count: messages.length,
         }))
       );

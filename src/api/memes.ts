@@ -1,5 +1,5 @@
-import { processWhatsAppData } from "@helpers/whatsapp-processor";
-import type { Message, MessageWithMeme } from "@models/Message";
+import { processWhatsAppData } from "~/helpers/whatsapp-processor";
+import type { Message, MessageWithMeme } from "~/models/Message";
 
 const messages = (await processWhatsAppData()).filter(
   (message) => message.postedAt > new Date("2026-01-01")
@@ -18,6 +18,10 @@ const messagesWithoutMemes = messages.filter(
 );
 
 const firstMeme = messagesWithMemes[0];
+
+export const getAllMessages = () => {
+  return messages;
+};
 
 export const getMemes = () => {
   return messagesWithMemes;
