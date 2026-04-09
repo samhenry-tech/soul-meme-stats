@@ -1,4 +1,5 @@
 import { getMemesByAuthor } from "@api/memes";
+import { GradientWaveBar } from "@components/atoms/GradientWaveBar";
 import { ResponsiveBar } from "@nivo/bar";
 import type { BarDatum } from "@nivo/bar";
 import { useEffect, useMemo, useState } from "react";
@@ -74,35 +75,39 @@ export const MemeBarChart = () => {
   const chartData = useMemo(() => [...data].reverse(), [data]);
 
   return (
-    <div className="mt-10 h-[min(28rem,70vh)] w-full min-w-0">
-      <ResponsiveBar
-        layout="horizontal"
-        data={chartData}
-        theme={chartTheme}
-        keys={["count"]}
-        indexBy="author"
-        colors={(bar: { index: number }) =>
-          BAR_COLORS[bar.index % BAR_COLORS.length] ?? BAR_COLORS[0]
-        }
-        enableLabel={false}
-        isInteractive={false}
-        margin={{ top: 24, right: 32, bottom: 56, left: 110 }}
-        padding={0.35}
-        innerPadding={2}
-        borderRadius={2}
-        borderColor={{
-          from: "color",
-          modifiers: [["darker", 1.2]],
-        }}
-        valueScale={{ type: "symlog", max: maxCount }}
-        axisBottom={null}
-        axisLeft={{
-          tickSize: 5,
-          tickPadding: 8,
-          tickRotation: 0,
-        }}
-      />
-    </div>
+    <>
+      <h2 className="mt-10 text-2xl font-bold">The Most Memes</h2>
+      <div className="h-[min(28rem,70vh)] w-full min-w-0">
+        <ResponsiveBar
+          layout="horizontal"
+          data={chartData}
+          theme={chartTheme}
+          keys={["count"]}
+          indexBy="author"
+          colors={(bar: { index: number }) =>
+            BAR_COLORS[bar.index % BAR_COLORS.length] ?? BAR_COLORS[0]
+          }
+          barComponent={GradientWaveBar as never}
+          enableLabel={false}
+          isInteractive={false}
+          margin={{ top: 24, right: 32, bottom: 56, left: 110 }}
+          padding={0.35}
+          innerPadding={2}
+          borderRadius={2}
+          borderColor={{
+            from: "color",
+            modifiers: [["darker", 1.2]],
+          }}
+          valueScale={{ type: "symlog", max: maxCount }}
+          axisBottom={null}
+          axisLeft={{
+            tickSize: 5,
+            tickPadding: 8,
+            tickRotation: 0,
+          }}
+        />
+      </div>
+    </>
   );
 };
 
