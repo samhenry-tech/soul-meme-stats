@@ -13,7 +13,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: false  # Workflow disabled
+    if: true # Workflow disabled
 
     permissions:
       id-token: write
