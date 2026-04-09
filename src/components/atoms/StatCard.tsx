@@ -10,7 +10,7 @@ export const StatCard = ({
   return (
     <article
       className={clsx(
-        `flex w-70 flex-col items-stretch justify-center gap-4 rounded-lg border-2 p-4`,
+        `flex min-h-35 w-full max-w-70 flex-col items-stretch justify-center gap-4 rounded-lg border-2 p-4`,
         className
       )}
     >

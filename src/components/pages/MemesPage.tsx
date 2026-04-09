@@ -20,12 +20,13 @@ export const MemesPage = () => {
         <RowsPhotoAlbum
           photos={memes.map((m) => m.meme)}
           defaultContainerWidth={1280}
-          targetRowHeight={60}
+          targetRowHeight={55}
           spacing={4}
           padding={0}
           render={{
             photo: (_, context) => (
               <div
+                key={context.index}
                 className="react-photo-album--photo relative overflow-hidden"
                 style={
                   {

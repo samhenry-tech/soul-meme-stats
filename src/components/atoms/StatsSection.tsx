@@ -9,7 +9,10 @@ export const StatsSection = ({
 }) => {
   return (
     <section
-      className={clsx("flex justify-between gap-12 text-center", className)}
+      className={clsx(
+        "flex flex-wrap justify-evenly gap-8 self-stretch text-center",
+        className
+      )}
     >
       {children}
     </section>
