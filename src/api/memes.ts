@@ -1,3 +1,4 @@
+import { groupBy } from "~/helpers/util";
 import { processWhatsAppData } from "~/helpers/whatsapp-processor";
 import type { Message, MessageWithMeme } from "~/models/Message";
 
@@ -16,8 +17,6 @@ const messagesWithMemes: MessageWithMeme[] = messages
 const messagesWithoutMemes = messages.filter(
   (message) => message.meme === null
 );
-
-const firstMeme = messagesWithMemes[0];
 
 export const getAllMessages = () => {
   return messages;
@@ -43,6 +42,8 @@ export const getMemesByAuthor = () => {
   return rows.sort((a, b) => b.messages.length - a.messages.length);
 };
 
+const firstMeme = messagesWithMemes[0];
+
 export const getFirstMeme = () => {
   return firstMeme;
 };
@@ -65,4 +66,18 @@ export const getAuthorWithMostMessagesWithoutMemes = () => {
     .sort((a, b) => b.count - a.count);
 
   return authorCounts[0] ?? { author: null, count: 0 };
+};
+
+export const getDayWithMostMemes = () => {
+  const groupedByDay = groupBy(messagesWithMemes, "postedAt", (postedAt) => {
+    return postedAt.toISOString().slice(0, 10);
+  });
+
+  const dayCounts = Array.from(groupedByDay.entries())
+    .map(([day, messages]) => ({
+      day: new Date(day),
+      count: messages.length,
+    }))
+    .sort((a, b) => b.count - a.count);
+  return dayCounts[0] ?? null;
 };

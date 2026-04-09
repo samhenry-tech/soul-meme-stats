@@ -1,6 +1,6 @@
+import chatExport from "~/data/_chat.txt?raw";
 import type { Meme, MemeMediaType } from "~/models/Meme";
 import type { Message } from "~/models/Message";
-import chatExport from "~/data/_chat.txt?raw";
 
 export const processWhatsAppData = async (): Promise<Message[]> => {
   return parseWhatsAppExportToMemes(chatExport);
@@ -11,7 +11,6 @@ const parseWhatsAppExportToMemes = async (
 ): Promise<Message[]> => {
   const withoutBidiMarks = whatsAppMessagesText.replace(/[\u200e\u200f]/g, "");
   const messages = getMessagesFromText(withoutBidiMarks);
-  console.log(messages);
   const parsedMessages = await Promise.all(
     messages.map((message) => parseDataFromMessage(message))
   );
