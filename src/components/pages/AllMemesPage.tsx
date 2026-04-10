@@ -1,5 +1,6 @@
 import { getAllMessages } from "~/api/memes";
 import { MemeItem } from "~/components/atoms/MemeItem";
+import { additionalStoredNonMemes } from "~/data/additionalNonMemes";
 import { useLocalStorage } from "usehooks-ts";
 
 /** Gridlines + padding once on the table via descendant selectors */
@@ -17,7 +18,7 @@ export const AllMessagesPage = () => {
 
   const [additionalNonMemes, setAdditionalNonMemes] = useLocalStorage<number[]>(
     ADDITIONAL_NON_MEMES_KEY,
-    []
+    additionalStoredNonMemes
   );
 
   const handleIsAMemeChange = (id: number, isAMeme: boolean) => {
@@ -34,7 +35,13 @@ export const AllMessagesPage = () => {
 
   return (
     <>
-      <button onClick={copyAdditionalNonMemes}>
+      <button
+        className="rounded-md bg-blue-500 px-4 py-2 text-white cursor-pointer"
+        type="button"
+        onClick={() => {
+          void copyAdditionalNonMemes();
+        }}
+      >
         Copy Additional Non Memes
       </button>
       <section className="flex w-full flex-col items-center p-4">
@@ -99,9 +106,11 @@ export const AllMessagesPage = () => {
                         ) : (
                           "No"
                         )}
-                        {additionalNonMemes.includes(i)
-                          ? " (Additional Non-Meme)"
-                          : null}
+                        {additionalNonMemes.includes(i) ? (
+                          <span className="text-red-500">
+                            (Additional Non-Meme)
+                          </span>
+                        ) : null}
                       </td>
                     </tr>
                   );

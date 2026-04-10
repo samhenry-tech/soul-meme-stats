@@ -1,6 +1,6 @@
-import chatExport from "~/data/_chat.txt?raw";
 import type { Meme, MemeMediaType } from "~/models/Meme";
 import type { Message } from "~/models/Message";
+import chatExport from "~/whatsappData/_chat.txt?raw";
 
 export const processWhatsAppData = async (): Promise<Message[]> => {
   return parseWhatsAppExportToMemes(chatExport);
@@ -121,7 +121,7 @@ const parsePostedAt = (postedAtString: string) => {
 };
 
 const imageUrls = import.meta.glob<string>(
-  "../data/*.{jpg,jpeg,png,gif,webp,mp4}",
+  "../whatsappData/*.{jpg,jpeg,png,gif,webp,mp4}",
   {
     eager: true,
     query: "?url",
@@ -143,7 +143,7 @@ const parseAttachment = async (attachment: string): Promise<Meme | null> => {
     return null;
   }
 
-  const url = imageUrls[`../data/${attachment}`];
+  const url = imageUrls[`../whatsappData/${attachment}`];
   if (!url) {
     console.error(`Unrecognised image: ${attachment}`);
     return null;

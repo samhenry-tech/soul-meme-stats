@@ -1,3 +1,4 @@
+import { additionalStoredNonMemes } from "~/data/additionalNonMemes";
 import { groupBy } from "~/helpers/util";
 import { processWhatsAppData } from "~/helpers/whatsapp-processor";
 import type { Message, MessageWithMeme } from "~/models/Message";
@@ -6,12 +7,16 @@ const messages = (await processWhatsAppData()).filter(
   (message) => message.postedAt > new Date("2026-01-01")
 );
 
-const messagesWithMemes: MessageWithMeme[] = messages
-  .filter((message) => message.meme !== null)
-  .map((message) => ({
-    ...message,
-    meme: message.meme!,
-  }))
+const groupedMessages = groupBy(
+  messages,
+  "meme",
+  (meme, message) =>
+    meme !== null &&
+    !additionalStoredNonMemes.includes(messages.indexOf(message))
+);
+
+const messagesWithMemes: MessageWithMeme[] = (groupedMessages.get(true) ?? [])
+  .filter((message): message is MessageWithMeme => message.meme !== null)
   .sort((a, b) => a.postedAt.getTime() - b.postedAt.getTime());
 
 const messagesWithoutMemes = messages.filter(

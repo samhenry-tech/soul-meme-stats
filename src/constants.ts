@@ -1,1 +1,1 @@
-export const isHidden = true;
+export const isHidden = false;

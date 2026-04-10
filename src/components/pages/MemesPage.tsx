@@ -20,7 +20,7 @@ export const MemesPage = () => {
         <RowsPhotoAlbum
           photos={memes.map((m) => m.meme)}
           defaultContainerWidth={1280}
-          targetRowHeight={55}
+          targetRowHeight={60}
           spacing={4}
           padding={0}
           render={{
