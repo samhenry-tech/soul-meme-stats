@@ -98,8 +98,16 @@ export const MemeBarChart = () => {
             from: "color",
             modifiers: [["darker", 1.2]],
           }}
-          valueScale={{ type: "symlog", max: maxCount }}
-          axisBottom={null}
+          valueScale={{ type: isHidden ? "symlog" : "linear", max: maxCount }}
+          axisBottom={
+            isHidden
+              ? null
+              : {
+                  tickSize: 5,
+                  tickPadding: 8,
+                  tickRotation: 0,
+                }
+          }
           axisLeft={{
             tickSize: 5,
             tickPadding: 8,
