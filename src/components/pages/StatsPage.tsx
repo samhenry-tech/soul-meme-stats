@@ -1,8 +1,9 @@
 import { getDayWithMostMemes, getFirstMeme, getMemes } from "~/api/memes";
 import { MemeBarChart } from "~/components/organisms/MemeBarChart";
-import { isHidden } from "~/constants";
+import { isHidden, revealDate } from "~/constants";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { getWeekday } from "~/helpers/util";
 import { StatCard } from "../atoms/StatCard";
 import { StatsSection } from "../atoms/StatsSection";
@@ -18,7 +19,19 @@ export const StatsPage = () => {
 
   return (
     <>
-      <section className="flex w-full max-w-7xl flex-col items-center px-4 py-8 sm:px-6 lg:px-8">
+      <section className="flex w-full max-w-7xl flex-col items-center px-4 pb-8 sm:px-6 lg:px-8">
+        {revealDate > new Date() && (
+          <div className="mb-8 flex flex-wrap items-center gap-4">
+            Results will be shown in:
+            <FlipClockCountdown
+              to={revealDate}
+              daysInHours={true}
+              className="text-sm"
+              digitBlockStyle={{ width: 20, height: 30, fontSize: 15 }}
+              separatorStyle={{ size: 2 }}
+            />
+          </div>
+        )}
         <StatsSection>
           <StatCard className="border-red-300">
             <h2 className="text-2xl font-bold">Total Meme Count</h2>
