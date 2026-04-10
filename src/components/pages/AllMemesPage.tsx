@@ -1,5 +1,6 @@
 import { getAllMessages } from "~/api/memes";
 import { MemeItem } from "~/components/atoms/MemeItem";
+import { useState } from "react";
 
 /** Gridlines + padding once on the table via descendant selectors */
 const tableClassName =
@@ -11,19 +12,25 @@ const tableClassName =
 
 export const AllMessagesPage = () => {
   const messages = getAllMessages();
+
+  const [isAMemeAdjustments, setIsAMemeAdjustments] = useState<number[]>([]);
+
   return (
     <section className="flex w-full flex-col items-center p-4">
       <article className="flex w-full max-w-full flex-col justify-center">
         <div className="overflow-x-auto rounded-lg">
           <table className={tableClassName}>
             <colgroup>
+              <col className="w-[50px]" />
               <col />
               <col />
               <col className="w-[150px]" />
               <col />
+              <col />
             </colgroup>
             <thead>
               <tr>
+                <th scope="col">Id</th>
                 <th scope="col">Posted At</th>
                 <th scope="col">Author</th>
                 <th scope="col">Meme</th>
@@ -34,6 +41,7 @@ export const AllMessagesPage = () => {
             <tbody>
               {messages.map((message, i) => (
                 <tr key={`${message.postedAt.toISOString()}-${i}`}>
+                  <td>{i}</td>
                   <td>{message.postedAt.toLocaleString()}</td>
                   <td>{message.postedBy}</td>
                   <td>
