@@ -1,6 +1,6 @@
 import { getAllMessages } from "~/api/memes";
 import { MemeItem } from "~/components/atoms/MemeItem";
-import { useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 /** Gridlines + padding once on the table via descendant selectors */
 const tableClassName =
@@ -10,72 +10,107 @@ const tableClassName =
   "[&_td]:border [&_td]:border-white/15 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top " +
   "[&_tbody_tr]:even:bg-white/4";
 
+const ADDITIONAL_NON_MEMES_KEY = "additional-non-memes";
+
 export const AllMessagesPage = () => {
   const messages = getAllMessages();
 
-  const [isAMemeAdjustments, setIsAMemeAdjustments] = useState<number[]>([]);
+  const [additionalNonMemes, setAdditionalNonMemes] = useLocalStorage<number[]>(
+    ADDITIONAL_NON_MEMES_KEY,
+    []
+  );
+
+  const handleIsAMemeChange = (id: number, isAMeme: boolean) => {
+    if (isAMeme) {
+      setAdditionalNonMemes((prev) => prev.filter((id) => id !== id));
+    } else {
+      setAdditionalNonMemes((prev) => [...prev, id]);
+    }
+  };
+
+  const copyAdditionalNonMemes = async () => {
+    await navigator.clipboard.writeText(JSON.stringify(additionalNonMemes));
+  };
 
   return (
-    <section className="flex w-full flex-col items-center p-4">
-      <article className="flex w-full max-w-full flex-col justify-center">
-        <div className="overflow-x-auto rounded-lg">
-          <table className={tableClassName}>
-            <colgroup>
-              <col className="w-[50px]" />
-              <col />
-              <col />
-              <col className="w-[150px]" />
-              <col />
-              <col />
-            </colgroup>
-            <thead>
-              <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Posted At</th>
-                <th scope="col">Author</th>
-                <th scope="col">Meme</th>
-                <th scope="col">Data</th>
-                <th scope="col">Is A Meme</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((message, i) => (
-                <tr key={`${message.postedAt.toISOString()}-${i}`}>
-                  <td>{i}</td>
-                  <td>{message.postedAt.toLocaleString()}</td>
-                  <td>{message.postedBy}</td>
-                  <td>
-                    {message.meme ? <MemeItem meme={message.meme} /> : null}
-                  </td>
-                  <td>{message.data}</td>
-                  <td>
-                    <div>
-                      <label>
-                        <input
-                          type="radio"
-                          name={`is-meme-${i}`}
-                          value="Yes"
-                          checked={!!message.meme}
-                        />
-                        Yes
-                      </label>
-                      <label className="ml-2">
-                        <input
-                          type="radio"
-                          name={`is-meme-${i}`}
-                          value="No"
-                          checked={!message.meme}
-                        />
-                        No
-                      </label>
-                    </div>
-                  </td>
+    <>
+      <button onClick={copyAdditionalNonMemes}>
+        Copy Additional Non Memes
+      </button>
+      <section className="flex w-full flex-col items-center p-4">
+        <article className="flex w-full max-w-full flex-col justify-center">
+          <div className="overflow-x-auto rounded-lg">
+            <table className={tableClassName}>
+              <colgroup>
+                <col className="w-[50px]" />
+                <col />
+                <col />
+                <col className="w-[150px]" />
+                <col />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Posted At</th>
+                  <th scope="col">Author</th>
+                  <th scope="col">Meme</th>
+                  <th scope="col">Data</th>
+                  <th scope="col">Is A Meme</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    </section>
+              </thead>
+              <tbody>
+                {messages.map((message, i) => {
+                  const hasMemeInData = message.meme !== null;
+                  const countsAsMeme =
+                    hasMemeInData && !additionalNonMemes.includes(i);
+
+                  return (
+                    <tr key={`${message.postedAt.toISOString()}-${i}`}>
+                      <td>{i}</td>
+                      <td>{message.postedAt.toLocaleString()}</td>
+                      <td>{message.postedBy}</td>
+                      <td>
+                        {message.meme ? <MemeItem meme={message.meme} /> : null}
+                      </td>
+                      <td>{message.data}</td>
+                      <td>
+                        {hasMemeInData ? (
+                          <div>
+                            <label className="inline-flex cursor-pointer items-center gap-1">
+                              <input
+                                type="radio"
+                                name={`is-meme-${i}`}
+                                checked={countsAsMeme}
+                                onChange={() => handleIsAMemeChange(i, true)}
+                              />
+                              Yes
+                            </label>
+                            <label className="ml-2 inline-flex cursor-pointer items-center gap-1">
+                              <input
+                                type="radio"
+                                name={`is-meme-${i}`}
+                                checked={!countsAsMeme}
+                                onChange={() => handleIsAMemeChange(i, false)}
+                              />
+                              No
+                            </label>
+                          </div>
+                        ) : (
+                          "No"
+                        )}
+                        {additionalNonMemes.includes(i)
+                          ? " (Additional Non-Meme)"
+                          : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </>
   );
 };

@@ -19,7 +19,8 @@
     "react-dom": "^19.2.4",
     "react-loading-skeleton": "^3.5.0",
     "react-photo-album": "^3.5.1",
-    "unique-names-generator": "^4.7.1"
+    "unique-names-generator": "^4.7.1",
+    "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
     "@html-eslint/eslint-plugin": "^0.59.0",
