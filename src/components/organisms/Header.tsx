@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 
 export const Header = () => (
-  <header className="flex w-full items-center gap-4 b p-4">
-    <img src="/memeWhite.png" alt="Soul Meme Stats" className="w-20" />
+  <header className="b flex w-full items-center gap-4 p-4">
+    <Link to="/">
+      <img src="/memeWhite.png" alt="Soul Meme Stats" className="w-20" />
+    </Link>
     <Link to="/" className="[&.active]:font-bold">
       Stats
     </Link>

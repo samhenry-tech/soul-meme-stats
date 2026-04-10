@@ -1,12 +1,13 @@
+import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { getDayWithMostMemes, getFirstMeme, getMemes } from "~/api/memes";
 import { MemeBarChart } from "~/components/organisms/MemeBarChart";
 import { isHidden, revealDate } from "~/constants";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { getWeekday } from "~/helpers/util";
+import Skeleton from "react-loading-skeleton";
 import { StatCard } from "../atoms/StatCard";
 import { StatsSection } from "../atoms/StatsSection";
+import "react-loading-skeleton/dist/skeleton.css";
+import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 
 export const StatsPage = () => {
   const memes = getMemes();
