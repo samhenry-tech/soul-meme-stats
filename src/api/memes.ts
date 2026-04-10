@@ -7,7 +7,7 @@ const messages = (await processWhatsAppData()).filter(
   (message) => message.postedAt > new Date("2026-01-01")
 );
 
-const groupedMessages = groupBy(
+const messagesGroupedByIsMeme = groupBy(
   messages,
   "meme",
   (meme, message) =>
@@ -15,13 +15,13 @@ const groupedMessages = groupBy(
     !additionalStoredNonMemes.includes(messages.indexOf(message))
 );
 
-const messagesWithMemes: MessageWithMeme[] = (groupedMessages.get(true) ?? [])
+const messagesWithMemes: MessageWithMeme[] = (
+  messagesGroupedByIsMeme.get(true) ?? []
+)
   .filter((message): message is MessageWithMeme => message.meme !== null)
   .sort((a, b) => a.postedAt.getTime() - b.postedAt.getTime());
 
-const messagesWithoutMemes = messages.filter(
-  (message) => message.meme === null
-);
+const messagesWithoutMemes = messagesGroupedByIsMeme.get(false) ?? [];
 
 export const getAllMessages = () => {
   return messages;

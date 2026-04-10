@@ -36,13 +36,22 @@ export const AllMessagesPage = () => {
   return (
     <>
       <button
-        className="rounded-md bg-blue-500 px-4 py-2 text-white cursor-pointer"
+        className="cursor-pointer rounded-md bg-blue-500 px-4 py-2 text-white"
         type="button"
         onClick={() => {
           void copyAdditionalNonMemes();
         }}
       >
         Copy Additional Non Memes
+      </button>
+      <button
+        className="cursor-pointer rounded-md bg-blue-500 px-4 py-2 text-white"
+        type="button"
+        onClick={() => {
+          setAdditionalNonMemes(additionalStoredNonMemes);
+        }}
+      >
+        Reset to data
       </button>
       <section className="flex w-full flex-col items-center p-4">
         <article className="flex w-full max-w-full flex-col justify-center">
