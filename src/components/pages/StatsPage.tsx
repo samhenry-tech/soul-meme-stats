@@ -21,7 +21,7 @@ export const StatsPage = () => {
     <>
       <section className="flex w-full max-w-7xl flex-col items-center px-4 pb-8 sm:px-6 lg:px-8">
         {revealDate > new Date() && (
-          <div className="mb-8 flex flex-wrap items-center gap-4">
+          <div className="mb-8 flex flex-wrap items-center justify-center gap-4">
             Results will be shown in:
             <FlipClockCountdown
               to={revealDate}
