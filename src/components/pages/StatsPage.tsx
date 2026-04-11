@@ -76,7 +76,11 @@ export const StatsPage = () => {
         <StatsSection>
           <StatCard className="border-yellow-300">
             <h2 className="text-2xl font-bold">
-              {!isHidden ? "Funniest meme" : <Skeleton />}
+              {!isHidden ? (
+                "Funniest/Most reacted to meme"
+              ) : (
+                <Skeleton count={2} />
+              )}
             </h2>
           </StatCard>
           <StatCard className="border-purple-300">

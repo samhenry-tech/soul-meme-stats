@@ -23,7 +23,7 @@ export const AllMessagesPage = () => {
 
   const handleIsAMemeChange = (id: number, isAMeme: boolean) => {
     if (isAMeme) {
-      setAdditionalNonMemes((prev) => prev.filter((id) => id !== id));
+      setAdditionalNonMemes((prev) => prev.filter((i) => i !== id));
     } else {
       setAdditionalNonMemes((prev) => [...prev, id]);
     }
@@ -61,7 +61,7 @@ export const AllMessagesPage = () => {
                 <col className="w-[50px]" />
                 <col />
                 <col />
-                <col className="w-[150px]" />
+                <col className="w-[250px]" />
                 <col />
                 <col />
               </colgroup>
