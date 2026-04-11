@@ -63,7 +63,7 @@ export const StatsPage = () => {
             </p>
           </StatCard>
           <StatCard className="border-blue-300">
-            <Tooltip content="Last meme before the final meme export was taken">
+            <Tooltip content="Last meme before the 11:30pm because Sam is going to bed. Will update tomorrow">
               <h2 className="text-2xl font-bold">Who posted the last meme?*</h2>
             </Tooltip>
             <p>{!isHidden ? lastMeme?.postedBy : <Skeleton />}</p>
