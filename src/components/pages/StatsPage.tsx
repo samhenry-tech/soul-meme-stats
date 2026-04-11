@@ -1,5 +1,10 @@
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
-import { getDayWithMostMemes, getFirstMeme, getMemes } from "~/api/memes";
+import {
+  getDayWithMostMemes,
+  getFirstMeme,
+  getLastMeme,
+  getMemes,
+} from "~/api/memes";
 import { MemeBarChart } from "~/components/organisms/MemeBarChart";
 import { isHidden, revealDate } from "~/constants";
 import { getWeekday } from "~/helpers/util";
@@ -8,6 +13,7 @@ import { StatCard } from "../atoms/StatCard";
 import { StatsSection } from "../atoms/StatsSection";
 import "react-loading-skeleton/dist/skeleton.css";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
+import { Tooltip } from "../atoms/Tooltip";
 
 export const StatsPage = () => {
   const memes = getMemes();
@@ -17,6 +23,8 @@ export const StatsPage = () => {
   const dayOfWeekWithMostMemes = dayWithMostMemes
     ? getWeekday(dayWithMostMemes.day)
     : null;
+
+  const lastMeme = getLastMeme();
 
   return (
     <>
@@ -54,7 +62,14 @@ export const StatsPage = () => {
               )}
             </p>
           </StatCard>
+          <StatCard className="border-blue-300">
+            <Tooltip content="Last meme before the final meme export was taken">
+              <h2 className="text-2xl font-bold">Who posted the last meme?*</h2>
+            </Tooltip>
+            <p>{!isHidden ? lastMeme?.postedBy : <Skeleton />}</p>
+          </StatCard>
         </StatsSection>
+
         <MemeBarChart />
 
         <h3 className="mb-8 text-2xl font-bold">Stats coming next year</h3>

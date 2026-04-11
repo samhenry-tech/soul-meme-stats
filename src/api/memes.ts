@@ -53,6 +53,12 @@ export const getFirstMeme = () => {
   return firstMeme;
 };
 
+const lastMeme = messagesWithMemes[messagesWithMemes.length - 1];
+
+export const getLastMeme = () => {
+  return lastMeme;
+};
+
 export const getAuthorWithMostMessagesWithoutMemes = () => {
   const groupedByAuthor = messagesWithoutMemes.reduce(
     (acc, message) => {

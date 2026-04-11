@@ -11,6 +11,7 @@
     "start": "vite --open"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "@leenguyen/react-flip-clock-countdown": "^1.7.2",
     "@nivo/bar": "^0.99.0",
     "@nivo/core": "^0.99.0",
