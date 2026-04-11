@@ -1,5 +1,8 @@
 import {
+  autoUpdate,
   flip,
+  FloatingPortal,
+  limitShift,
   offset,
   shift,
   useDismiss,
@@ -23,11 +26,20 @@ export const Tooltip = ({
   const { refs, floatingStyles, context } = useFloating({
     open,
     onOpenChange: setOpen,
+    strategy: "fixed",
     placement: "right",
+    whileElementsMounted: autoUpdate,
     middleware: [
-      offset(8), // space from element
-      flip(), // flip if no space
-      shift(), // keep in viewport
+      offset(8),
+      flip({
+        padding: 8,
+        /**
+         * Prefer right, then above/below — avoids widening the page on narrow
+         * screens
+         */
+        fallbackPlacements: ["top", "bottom", "left"],
+      }),
+      shift({ padding: 8, limiter: limitShift() }),
     ],
   });
 
@@ -55,22 +67,18 @@ export const Tooltip = ({
       </div>
 
       {open && (
-        <div
-          ref={refs.setFloating}
-          className="border border-white/15 bg-neutral-900 px-3 py-2 text-sm font-normal text-white shadow-lg"
-          style={{
-            ...floatingStyles,
-            background: "#111",
-            color: "white",
-            padding: "6px 10px",
-            borderRadius: 6,
-            fontSize: 12,
-            zIndex: 1000,
-          }}
-          {...getFloatingProps()}
-        >
-          {content}
-        </div>
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            className="z-1000 max-w-[min(18rem,calc(100vw-1rem))] rounded-md border border-white/15 bg-neutral-900 px-2.5 py-1.5 text-xs font-normal text-white shadow-lg"
+            style={{
+              ...floatingStyles,
+            }}
+            {...getFloatingProps()}
+          >
+            {content}
+          </div>
+        </FloatingPortal>
       )}
     </>
   );
