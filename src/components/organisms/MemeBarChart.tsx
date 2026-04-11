@@ -87,8 +87,7 @@ export const MemeBarChart = () => {
           colors={(bar: { index: number }) =>
             BAR_COLORS[bar.index % BAR_COLORS.length] ?? BAR_COLORS[0]
           }
-          barComponent={GradientWaveBar as never}
-          enableLabel={false}
+          barComponent={isHidden ? (GradientWaveBar as never) : undefined}
           isInteractive={false}
           margin={{ top: 24, right: 32, bottom: 56, left: 110 }}
           padding={0.35}
